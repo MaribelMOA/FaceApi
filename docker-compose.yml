@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  faceapi:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/faceapi
+      - AWS_ACCESS_KEY_ID=your-key
+      - AWS_SECRET_ACCESS_KEY=your-secret
+      - AWS_REGION=us-east-1
+      - AWS_S3_BUCKET=your-bucket
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: faceapi
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
