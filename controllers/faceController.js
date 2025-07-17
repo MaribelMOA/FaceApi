@@ -176,21 +176,22 @@ module.exports = {
       console.error(err);
       return res.status(500).json({ success: false, message: 'Error retrieving images', error: err.message });
     }
-    getImagesByVisitorIdAndDate: async (req, res) => {
-        const { visitorId, date } = req.query;
-        if (!visitorId || !date) {
-          return res.status(400).json({ success: false, message: 'visitorId and date are required (YYYY-MM-DD)' });
-        }
+    
       
-        try {
-          const images = await bucketService.getImagesByVisitorIdAndDate(visitorId, date);
-          return res.json({ success: true, count: images.length, images });
-        } catch (err) {
-          console.error(err);
-          return res.status(500).json({ success: false, message: 'Error retrieving images', error: err.message });
-        }
-      },
-      
+  },
+  getImagesByVisitorIdAndDate: async (req, res) => {
+    const { visitorId, date } = req.query;
+    if (!visitorId || !date) {
+      return res.status(400).json({ success: false, message: 'visitorId and date are required (YYYY-MM-DD)' });
+    }
+  
+    try {
+      const images = await bucketService.getImagesByVisitorIdAndDate(visitorId, date);
+      return res.json({ success: true, count: images.length, images });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Error retrieving images', error: err.message });
+    }
   },
   
 
