@@ -65,21 +65,80 @@ module.exports = {
     return match?.name || null;
   },
 
-  async getFilesByKeyword(keyword) {
-    const [files] = await bucket.getFiles({ prefix: 'visitas/' });
-    const signedUrls = [];
-
+  async  getImagesByVisitorId(visitorId) {
+    const [files] = await bucket.getFiles({ prefix: `visitas/${visitorId}/` });
+    const urls = [];
+  
     for (const file of files) {
-      if (file.name.includes(keyword)) {
+      if (file.name.endsWith('.jpg')) {
         const [url] = await file.getSignedUrl({
           version: 'v4',
           action: 'read',
           expires: Date.now() + 60 * 60 * 1000
         });
-        signedUrls.push(url);
+        urls.push(url);
       }
     }
+  
+    return urls;
+  },  
 
-    return signedUrls;
+  async  getImagesByRealFileName(realFileName) {
+    const [files] = await bucket.getFiles({ prefix: `visitas/` });
+    const urls = [];
+  
+    for (const file of files) {
+      if (file.name.includes(`/${realFileName}_`) && file.name.endsWith('.jpg')) {
+        const [url] = await file.getSignedUrl({
+          version: 'v4',
+          action: 'read',
+          expires: Date.now() + 60 * 60 * 1000
+        });
+        urls.push(url);
+      }
+    }
+  
+    return urls;
+  },
+
+  async  getImagesByVisitorIdAndDate(visitorId, dateStr) {
+    const [files] = await bucket.getFiles({ prefix: `visitas/${visitorId}/` });
+    const urls = [];
+  
+    for (const file of files) {
+      const metadataDate = dayjs(file.metadata.updated).format('YYYY-MM-DD');
+      if (metadataDate === dateStr) {
+        const [url] = await file.getSignedUrl({
+          version: 'v4',
+          action: 'read',
+          expires: Date.now() + 60 * 60 * 1000
+        });
+        urls.push(url);
+      }
+    }
+  
+    return urls;
   }
+  
+
+  
+  
+
+//   async getFilesByKeyword(keyword) {
+//     const [files] = await bucket.getFiles({ prefix: 'visitas/' });
+//     const signedUrls = [];
+
+//     for (const file of files) {
+//       if (file.name.includes(keyword)) {
+//         const [url] = await file.getSignedUrl({
+//           version: 'v4',
+//           action: 'read',
+//           expires: Date.now() + 60 * 60 * 1000
+//         });
+//         signedUrls.push(url);
+//       }
+//     }
+
+//     return signedUrls;
+//   }
 };

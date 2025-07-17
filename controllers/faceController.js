@@ -5,6 +5,7 @@ const rekognitionService = require('../services/rekognitionService');
 const bucketService = require('../services/GCStorageService');
 const visitorModel = require('../models/visitorModel');
 const visitModel = require('../models/visitModel');
+const { all } = require('../routes/visitorRoutes');
 
 const TEMP_DIR = path.join(__dirname, '../temp-images');
 
@@ -28,16 +29,31 @@ module.exports = {
             // Decodificar base64 a buffer
             const imageBuffer = Buffer.from(imageData, 'base64');
 
-
-
             const fileName = `face_${Date.now()}_${Math.random().toString(36).substring(2, 10)}.jpg`;
             const filePath = path.join(TEMP_DIR, fileName);
             fs.writeFileSync(filePath, imageBuffer);
 
             const { faceId, externalImageId, confidence, allowed } = await rekognitionService.recognizeFace(imageBuffer);
-            return res.json({ face_id: faceId, external_image_id: externalImageId, image_file_path: fileName });
+            
+            if (!faceId || !externalImageId || allowed == false) {
+                if(message){
+
+                }
+                return res.status(404).json({ success: false, message: 'No matching face found with =>99% confidence' });
+            }
+          
+              // Buscar o crear visitante en la base de datos
+            const visitor = await visitorModel.getVisitor(faceId, externalImageId);
+          
+            return res.json({
+                success: true,
+                confidence,
+                visitor, // Aquí se retorna el objeto visitor completo desde la DB
+                image_file_path: fileName
+            });
         } catch (err) {
-            return res.status(500).json({ allowed: false, message: 'Recognition error', error: err.message });
+            console.error('Error in identify:', err);
+            return res.status(500).json({ success: false, message: 'Recognition error', error: err.message });
         }
   },
 
@@ -50,7 +66,7 @@ module.exports = {
 //     return res.json({ success: true });
 //   },
 
-  // 3. Registrar imagen definitiva en S3
+  // 3. Registrar imagen definitiva en un bucket
   registerImage: async (req, res) => {
     try {
         const { visitorId, tempFileName, realFileName } = req.query;
@@ -136,20 +152,50 @@ module.exports = {
     }
   },
 
-  // 10. Health check
-//   healthCheck: async (req, res) => {
-//     const cameraOk = rekognitionService.isCameraAvailable();
-//     let awsOk = false;
-//     let awsMessage = '';
+  /////////////////////////////////////
+  getImagesByVisitorId: async (req, res) => {
+    const { visitorId } = req.params;
+    if (!visitorId) return res.status(400).json({ success: false, message: 'visitorId is required' });
+  
+    try {
+      const images = await bucketService.getImagesByVisitorId(visitorId);
+      return res.json({ success: true, count: images.length, images });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Error retrieving images', error: err.message });
+    }
+  },
+  getImagesByRealFileName: async (req, res) => {
+    const { realFileName } = req.query;
+    if (!realFileName) return res.status(400).json({ success: false, message: 'realFileName is required' });
+  
+    try {
+      const images = await bucketService.getImagesByRealFileName(realFileName);
+      return res.json({ success: true, count: images.length, images });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Error retrieving images', error: err.message });
+    }
+    getImagesByVisitorIdAndDate: async (req, res) => {
+        const { visitorId, date } = req.query;
+        if (!visitorId || !date) {
+          return res.status(400).json({ success: false, message: 'visitorId and date are required (YYYY-MM-DD)' });
+        }
+      
+        try {
+          const images = await bucketService.getImagesByVisitorIdAndDate(visitorId, date);
+          return res.json({ success: true, count: images.length, images });
+        } catch (err) {
+          console.error(err);
+          return res.status(500).json({ success: false, message: 'Error retrieving images', error: err.message });
+        }
+      },
+      
+  },
+  
 
-//     try {
-//       await rekognitionService.checkAWS();
-//       awsOk = true;
-//       awsMessage = 'Connection successful';
-//     } catch (err) {
-//       awsMessage = err.message;
-//     }
 
-//     return res.json({ camera_ok: cameraOk, aws_ok: awsOk, aws_message: awsMessage, timestamp: new Date() });
-//   }
+
+
+    
 };

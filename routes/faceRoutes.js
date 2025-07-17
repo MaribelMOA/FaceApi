@@ -12,6 +12,14 @@ router.delete('/delete-image/:fileName', faceController.deleteImage);
 router.get('/images-by-date', faceController.getImagesByDate);
 //router.get('/check-camera', faceController.checkCamera);
 router.get('/check-aws', faceController.checkAWS);
-//router.get('/health', faceController.healthCheck);
+
+
+
+// nuevas rutas
+router.get('/images/by-visitor/:visitorId', faceController.getImagesByVisitorId);
+router.get('/images/by-realfilename', faceController.getImagesByRealFileName);
+router.get('/images/by-visitor-date', faceController.getImagesByVisitorIdAndDate);
+
+
 
 export default router;

@@ -76,11 +76,15 @@ const COLLECTION_ID = 'mi-coleccion-facial';
         }).promise();
 
         const faceId = index.FaceRecords[0]?.Face?.FaceId || null;
-        return { faceId, externalImageId: externalId };
+        return { faceId, 
+            externalImageId: externalId, 
+            confidence: 100,
+            allowed: true
+        };
       }
     } catch (err) {
-      console.error('Error en Rekognition:', err);
-      throw err;
+        console.error('Error en Rekognition:', err);
+        throw err;
     }
   },
 
