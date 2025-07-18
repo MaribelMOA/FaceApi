@@ -5,13 +5,15 @@ services:
     build: .
     ports:
       - "3000:3000"
-    environment:
-      - PORT=3000
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/faceapi
-      - AWS_ACCESS_KEY_ID=your-key
-      - AWS_SECRET_ACCESS_KEY=your-secret
-      - AWS_REGION=us-east-1
-      - AWS_S3_BUCKET=your-bucket
+    env_file:
+      - .env
+    # environment:
+    #   - PORT=3000
+    #   - DATABASE_URL=postgres://postgres:postgres@db:5432/faceapi
+    #   - AWS_ACCESS_KEY_ID=your-key
+    #   - AWS_SECRET_ACCESS_KEY=your-secret
+    #   - AWS_REGION=us-east-1
+    #   - AWS_S3_BUCKET=your-bucket
     depends_on:
       - db
 

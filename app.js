@@ -4,11 +4,11 @@ require('dotenv').config();
 
 app.use(express.json());
 
-const visitorRoutes = require('./routes/visitorRoutes');
+//const visitorRoutes = require('./routes/visitorRoutes');
 const visitRoutes = require('./routes/visitRoutes');
 const faceRoutes = require('./routes/faceRoutes');
 
-app.use('/api/visitors', visitorRoutes);
+//app.use('/api/visitors', visitorRoutes);
 app.use('/api/visits', visitRoutes);
 app.use('/api/face', faceRoutes);
 
