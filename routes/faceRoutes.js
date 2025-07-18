@@ -1,9 +1,16 @@
 const express = require('express');
-const faceController = require('../controllers/faceController');
+const multer = require('multer');
 
+const faceController = require('../controllers/faceController');
 const router = express.Router();
 
-router.post('/identify', faceController.identify);
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+//OG
+// router.post('/identify', faceController.identify);
+router.post('/identify', upload.single('file'), faceController.identify);
+
 router.post('/register-image', faceController.registerImage);
 //router.post('/register-visit', faceController.registerVisit);
 router.delete('/delete-tempImage/:tempFileName', faceController.deleteTempImage);

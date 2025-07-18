@@ -29,6 +29,17 @@ module.exports = {
     return destFileName;
   },
 
+  // Nuevo método para subir buffer en memoria
+  async uploadBuffer(buffer, destFileName) {
+    const file = bucket.file(destFileName);
+    await file.save(buffer, {
+      resumable: false,
+      public: false,
+      contentType: 'image/jpeg'  // o detecta dinámicamente si quieres
+    });
+    return destFileName;
+  },
+
   async getSignedUrl(fileName) {
     const file = bucket.file(fileName);
 

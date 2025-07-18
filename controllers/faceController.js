@@ -8,34 +8,33 @@ const visitModel = require('../models/visitModel');
 const { all } = require('../routes/userRoutes');
 
 const TEMP_DIR = path.join(__dirname, '../temp-images');
-
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
+
+// Cache en memoria: clave = nombre temporal, valor = Buffer de imagen
+const imageCache = new Map();
+
 
 module.exports = {
   // 1. Captura y reconocimiento facial
   identify: async (req, res) => {
         try {
-        // Validar que venga imagen ORIGINAL
-        //   if (!req.file || !req.file.buffer) {
-        //     return res.status(400).json({ allowed: false, message: 'Image file is required' });
-        //   }
-        //   const imageBuffer = req.file.buffer;
-            const { imageData } = req.body;
-
-            if (!imageData) {
-            return res.status(400).json({ allowed: false, message: 'Image data is required in base64 format' });
+            if (!req.file || !req.file.buffer) {
+                return res.status(400).json({ allowed: false, message: 'Image file is required' });
             }
-
-            // Decodificar base64 a buffer
-            const imageBuffer = Buffer.from(imageData, 'base64');
-
-            const fileName = `face_${Date.now()}_${Math.random().toString(36).substring(2, 10)}.jpg`;
-            const filePath = path.join(TEMP_DIR, fileName);
-            fs.writeFileSync(filePath, imageBuffer);
+        
+            const imageBuffer = req.file.buffer;
+    
+            // Generar un nombre temporal único para la imagen en memoria
+            const tempImageName = `face_${Math.random().toString(36).substring(2, 10)}_${Date.now()}.jpg`;
+    
+            // Guardar el buffer en la cache en memoria
+            imageCache.set(tempImageName, imageBuffer);
 
             const { faceId, externalImageId, confidence, allowed } = await rekognitionService.recognizeFace(imageBuffer);
             
             if (!faceId || !externalImageId || allowed == false) {
+                // Eliminar imagen de cache si no se reconoce
+                imageCache.delete(tempImageName);
                 
                 return res.status(404).json({ success: false, message: `No matching face found with =>99% confidence. Confidence: ${confidence}%` });
             }
@@ -47,7 +46,7 @@ module.exports = {
                 success: true,
                 confidence,
                 user, // Aquí se retorna el objeto user completo desde la DB
-                image_file_path: fileName
+                image_file_path: tempImageName
             });
         } catch (err) {
             console.error('Error in identify:', err);
@@ -73,15 +72,18 @@ module.exports = {
             return res.status(400).json({ success: false, message: 'userId, tempFileName, and realFileName are required' });
         }
 
-        const filePath = path.join(TEMP_DIR, tempFileName);
-        if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ success: false, message: 'Temp image not found' });
+        // Buscar buffer en cache
+        const imageBuffer = imageCache.get(tempImageName);
+
+        if (!imageBuffer) {
+            return res.status(404).json({ success: false, message: 'Temp image not found or expired' });
         }
 
-        const finalName = `visitas/${userId}/${realFileName}_${Date.now()}.jpg`;
+        const finalName = `visitas/${userId}/${realFileName}.jpg`;//_${Date.now()}.jpg`;
 
-        const imageUrl = await bucketService.uploadFile(filePath, finalName);
-        fs.unlinkSync(filePath); // Borrar local después de subir
+        const imageUrl = await bucketService.uploadBuffer(imageBuffer, finalName);
+        // Eliminar imagen de cache para liberar memoria
+        imageCache.delete(tempImageName);
 
         return res.json({ success: true, imageUrl });
 
@@ -93,13 +95,16 @@ module.exports = {
 
   // 4. Eliminar imagen temporal
   deleteTempImage: (req, res) => {
-        const filePath = path.join(TEMP_DIR, req.params.tempFileName);
-        if (!fs.existsSync(filePath)) {
-             return res.status(404).json({ success: false, message: 'Temp image not found' });
-        }
-        fs.unlinkSync(filePath);
-        return res.json({ success: true, message: 'Temp image deleted successfully' });
-  },
+    const tempFileName = req.params.tempFileName;
+
+    if (!imageCache.has(tempFileName)) {
+      return res.status(404).json({ success: false, message: 'Temp image not found in memory' });
+    }
+  
+    imageCache.delete(tempFileName);
+  
+    return res.json({ success: true, message: 'Temp image deleted successfully from memory' });
+   },
 
   // 5. Obtener URL de imagen desde S3
   getImage: async (req, res) => {
