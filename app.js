@@ -5,11 +5,11 @@ require('dotenv').config();
 app.use(express.json({ limit: '10mb' }));
 
 //const userRoutes = require('./routes/useroutes');
-const visitRoutes = require('./routes/visitRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
 const faceRoutes = require('./routes/faceRoutes');
 
 //app.use('/api/user', userRoutes);
-app.use('/api/visits', visitRoutes);
+app.use('/api/transactions', transactionRoutes);
 app.use('/api/face', faceRoutes);
 
 const PORT = process.env.PORT || 3000;

@@ -12,7 +12,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/identify', upload.single('file'), faceController.identify);
 
 router.post('/register-image', faceController.registerImage);
-//router.post('/register-visit', faceController.registerVisit);
 router.delete('/delete-tempImage/:tempFileName', faceController.deleteTempImage);
 router.get('/get-image', faceController.getImage);
 router.delete('/delete-image/:fileName', faceController.deleteImage);

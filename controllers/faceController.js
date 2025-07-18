@@ -4,7 +4,7 @@ const path = require('path');
 const rekognitionService = require('../services/rekognitionService');
 const bucketService = require('../services/GCStorageService');
 const userModel = require('../models/userModel');
-const visitModel = require('../models/visitModel');
+const transactionModel = require('../models/transactionModel');
 const { all } = require('../routes/userRoutes');
 
 const TEMP_DIR = path.join(__dirname, '../temp-images');

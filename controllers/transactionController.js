@@ -1,18 +1,18 @@
-const visitModel = require('../models/visitModel');
+const transactionModel = require('../models/transactionModel');
 
-async function saveVisit(req, res) {
+async function saveTransaction(req, res) {
   const { userId, type, amount, imagePath } = req.body;
 
   if (!userId || !type || !amount || !imagePath) {
-    return res.status(400).json({ success: false, message: 'Missing data for visit' });
+    return res.status(400).json({ success: false, message: 'Missing data for transaction' });
   }
 
   try {
-    await visitModel.saveVisit(userId, type, amount, imagePath);
+    await transactionModel.saveTransaction(userId, type, amount, imagePath);
     res.json({ success: true });
   } catch (err) {
-    console.error('Error saving visit:', err);
-    res.status(500).json({ success: false, message: 'Failed to save visit' });
+    console.error('Error saving transaction:', err);
+    res.status(500).json({ success: false, message: 'Failed to save transaction' });
   }
 }
 
@@ -20,7 +20,7 @@ async function getTotalDailyAmount(req, res) {
   const { userId } = req.params;
 
   try {
-    const total = await visitModel.getTotalDailyAmount(userId);
+    const total = await transactionModel.getTotalDailyAmount(userId);
     res.json({ success: true, total });
   } catch (err) {
     console.error('Error getting daily amount:', err);
@@ -29,6 +29,6 @@ async function getTotalDailyAmount(req, res) {
 }
 
 module.exports = {
-  saveVisit,
+  saveTransaction,
   getTotalDailyAmount
 };
