@@ -65,8 +65,8 @@ module.exports = {
     return match?.name || null;
   },
 
-  async  getImagesByVisitorId(visitorId) {
-    const [files] = await bucket.getFiles({ prefix: `visitas/${visitorId}/` });
+  async  getImagesByUserId(userId) {
+    const [files] = await bucket.getFiles({ prefix: `visitas/${userId}/` });
     const urls = [];
   
     for (const file of files) {
@@ -101,8 +101,8 @@ module.exports = {
     return urls;
   },
 
-  async  getImagesByVisitorIdAndDate(visitorId, dateStr) {
-    const [files] = await bucket.getFiles({ prefix: `visitas/${visitorId}/` });
+  async  getImagesByUserIdAndDate(userId, dateStr) {
+    const [files] = await bucket.getFiles({ prefix: `visitas/${userId}/` });
     const urls = [];
   
     for (const file of files) {
