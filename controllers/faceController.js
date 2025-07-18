@@ -66,14 +66,14 @@ module.exports = {
   // 3. Registrar imagen definitiva en un bucket
   registerImage: async (req, res) => {
     try {
-        const { userId, tempFileName, realFileName } = req.query;
+        const { userId, tempFileName, realFileName } = req.body;
 
         if (!userId || !tempFileName || !realFileName) {
             return res.status(400).json({ success: false, message: 'userId, tempFileName, and realFileName are required' });
         }
 
         // Buscar buffer en cache
-        const imageBuffer = imageCache.get(tempImageName);
+        const imageBuffer = imageCache.get(tempFileName);
 
         if (!imageBuffer) {
             return res.status(404).json({ success: false, message: 'Temp image not found or expired' });
@@ -83,9 +83,9 @@ module.exports = {
 
         const imageUrl = await bucketService.uploadBuffer(imageBuffer, finalName);
         // Eliminar imagen de cache para liberar memoria
-        imageCache.delete(tempImageName);
+        imageCache.delete(tempFileName);
 
-        return res.json({ success: true, imageUrl });
+        return res.json({ success: true, imageUrl });//imageUrl: imageUrl.replace('visitas/', '') });
 
     } catch (err) {
         console.error(err);
@@ -111,7 +111,12 @@ module.exports = {
         const { fileName } = req.query;
         if (!fileName) return res.status(400).json({ success: false, message: 'Must provide filename.' });
 
-        const url = await bucketService.getFileUrl(fileName);
+        // Añadir prefijo 'visitas/' si no está
+        if (!fileName.startsWith('visitas/')) {
+            fileName = `visitas/${fileName}`;
+        }
+
+        const url = await bucketService.getSignedUrl(fileName);
         if (!url) return res.status(404).json({ success: false, message: 'Image not found.' });
 
         return res.json({ success: true, url });
@@ -119,9 +124,15 @@ module.exports = {
 
   // 6. Eliminar imagen definitiva en S3
   deleteImage: async (req, res) => {
-    const key = `visitas/${req.params.fileName}`;
-    const deleted = await bucketService.deleteFile(key);
+    let fileName = req.query.fileName;
+    if (!fileName) return res.status(400).json({ success: false, message: 'Missing fileName' });
 
+    // Añadir prefijo 'visitas/' si no está
+    if (!fileName.startsWith('visitas/')) {
+        fileName = `visitas/${fileName}`;
+    }
+
+    const deleted = await bucketService.deleteFile(fileName);
     if (!deleted) return res.status(404).json({ success: false, message: 'Could not delete or not found' });
 
     return res.json({ success: true, message: 'Image deleted successfully' });

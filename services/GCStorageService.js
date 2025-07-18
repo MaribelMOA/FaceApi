@@ -1,6 +1,8 @@
 // services/gcStorageService.js
 const { Storage } = require('@google-cloud/storage');
 const { URL } = require('url');
+const dayjs = require('dayjs');
+
 
 const bucketName = process.env.BUCKET_GC;
 
@@ -66,15 +68,15 @@ module.exports = {
     }
   },
 
-  async findFileByPrefix(prefix) {
-    const [files] = await bucket.getFiles({ prefix: 'visitas/' });
+//   async findFileByPrefix(prefix) {
+//     const [files] = await bucket.getFiles({ prefix: 'visitas/' });
 
-    const match = files
-      .filter(f => f.name.includes(prefix) && f.name.endsWith('.jpg'))
-      .sort((a, b) => new Date(b.metadata.updated) - new Date(a.metadata.updated))[0];
+//     const match = files
+//       .filter(f => f.name.includes(prefix) && f.name.endsWith('.jpg'))
+//       .sort((a, b) => new Date(b.metadata.updated) - new Date(a.metadata.updated))[0];
 
-    return match?.name || null;
-  },
+//     return match?.name || null;
+//   },
 
   async  getImagesByUserId(userId) {
     const [files] = await bucket.getFiles({ prefix: `visitas/${userId}/` });
