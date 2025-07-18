@@ -2,18 +2,18 @@ const db = require('./db');
 
 const exchangeRate = 17.5;
 
-async function saveVisit(visitorId, type, amount, imagePath) {
+async function saveVisit(userId, type, amount, imagePath) {
   await db.query(
-    'INSERT INTO visits (visitor_id, type, amount, image_path) VALUES ($1, $2, $3, $4)',
-    [visitorId, type, amount, imagePath]
+    'INSERT INTO visits (user_id, type, amount, image_path) VALUES ($1, $2, $3, $4)',
+    [userId, type, amount, imagePath]
   );
 }
 
-async function getTotalDailyAmount(visitorId) {
+async function getTotalDailyAmount(userId) {
   const result = await db.query(
     `SELECT type, amount FROM visits 
-     WHERE visitor_id = $1 AND DATE(created_at) = CURRENT_DATE`,
-    [visitorId]
+     WHERE user_id = $1 AND DATE(created_at) = CURRENT_DATE`,
+    [userId]
   );
 
   let total = 0;

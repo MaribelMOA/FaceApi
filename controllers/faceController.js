@@ -3,9 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const rekognitionService = require('../services/rekognitionService');
 const bucketService = require('../services/GCStorageService');
-const visitorModel = require('../models/visitorModel');
+const userModel = require('../models/userModel');
 const visitModel = require('../models/visitModel');
-const { all } = require('../routes/visitorRoutes');
+const { all } = require('../routes/userRoutes');
 
 const TEMP_DIR = path.join(__dirname, '../temp-images');
 
@@ -36,19 +36,17 @@ module.exports = {
             const { faceId, externalImageId, confidence, allowed } = await rekognitionService.recognizeFace(imageBuffer);
             
             if (!faceId || !externalImageId || allowed == false) {
-                if(message){
-
-                }
-                return res.status(404).json({ success: false, message: 'No matching face found with =>99% confidence' });
+                
+                return res.status(404).json({ success: false, message: `No matching face found with =>99% confidence. Confidence: ${confidence}%` });
             }
           
               // Buscar o crear visitante en la base de datos
-            const visitor = await visitorModel.getVisitor(faceId, externalImageId);
+            const user = await userModel.getUser(faceId, externalImageId);
           
             return res.json({
                 success: true,
                 confidence,
-                visitor, // Aquí se retorna el objeto visitor completo desde la DB
+                user, // Aquí se retorna el objeto user completo desde la DB
                 image_file_path: fileName
             });
         } catch (err) {
@@ -69,10 +67,10 @@ module.exports = {
   // 3. Registrar imagen definitiva en un bucket
   registerImage: async (req, res) => {
     try {
-        const { visitorId, tempFileName, realFileName } = req.query;
+        const { userId, tempFileName, realFileName } = req.query;
 
-        if (!visitorId || !tempFileName || !realFileName) {
-            return res.status(400).json({ success: false, message: 'visitorId, tempFileName, and realFileName are required' });
+        if (!userId || !tempFileName || !realFileName) {
+            return res.status(400).json({ success: false, message: 'userId, tempFileName, and realFileName are required' });
         }
 
         const filePath = path.join(TEMP_DIR, tempFileName);
@@ -80,7 +78,7 @@ module.exports = {
             return res.status(404).json({ success: false, message: 'Temp image not found' });
         }
 
-        const finalName = `visitas/${visitorId}/${realFileName}_${Date.now()}.jpg`;
+        const finalName = `visitas/${userId}/${realFileName}_${Date.now()}.jpg`;
 
         const imageUrl = await bucketService.uploadFile(filePath, finalName);
         fs.unlinkSync(filePath); // Borrar local después de subir
@@ -153,12 +151,12 @@ module.exports = {
   },
 
   /////////////////////////////////////
-  getImagesByVisitorId: async (req, res) => {
-    const { visitorId } = req.params;
-    if (!visitorId) return res.status(400).json({ success: false, message: 'visitorId is required' });
+  getImagesByUserId: async (req, res) => {
+    const { userId } = req.params;
+    if (!userId) return res.status(400).json({ success: false, message: 'userId is required' });
   
     try {
-      const images = await bucketService.getImagesByVisitorId(visitorId);
+      const images = await bucketService.getImagesByUserId(userId);
       return res.json({ success: true, count: images.length, images });
     } catch (err) {
       console.error(err);
@@ -179,14 +177,14 @@ module.exports = {
     
       
   },
-  getImagesByVisitorIdAndDate: async (req, res) => {
-    const { visitorId, date } = req.query;
-    if (!visitorId || !date) {
-      return res.status(400).json({ success: false, message: 'visitorId and date are required (YYYY-MM-DD)' });
+  getImagesByUserIdAndDate: async (req, res) => {
+    const { userId, date } = req.query;
+    if (!userId || !date) {
+      return res.status(400).json({ success: false, message: 'userId and date are required (YYYY-MM-DD)' });
     }
   
     try {
-      const images = await bucketService.getImagesByVisitorIdAndDate(visitorId, date);
+      const images = await bucketService.getImagesByUserIdAndDate(userId, date);
       return res.json({ success: true, count: images.length, images });
     } catch (err) {
       console.error(err);

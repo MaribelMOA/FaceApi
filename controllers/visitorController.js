@@ -1,20 +1,20 @@
-const visitorModel = require('../models/visitorModel');
+const userModel = require('../models/userModel');
 
-async function getOrCreateVisitor(req, res) {
+async function getOrCreateUser(req, res) {
   const { faceId, externalImageId } = req.body;
   if (!faceId || !externalImageId) {
     return res.status(400).json({ success: false, message: 'Missing faceId or externalImageId' });
   }
 
   try {
-    const visitor = await visitorModel.getVisitor(faceId, externalImageId);
-    res.json({ success: true, visitor });
+    const user = await userModel.getUser(faceId, externalImageId);
+    res.json({ success: true, user });
   } catch (err) {
-    console.error('Error in getOrCreateVisitor:', err);
+    console.error('Error in getOrCreateUser:', err);
     res.status(500).json({ success: false, message: 'Internal error' });
   }
 }
 
 module.exports = {
-  getOrCreateVisitor
+  getOrCreateUser
 };

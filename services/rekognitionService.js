@@ -40,20 +40,24 @@ const COLLECTION_ID = 'mi-coleccion-facial';
       const search = await rekognition.searchFacesByImage(searchParams).promise();
 
       if (search.FaceMatches.length > 0) {
-        const match = search.FaceMatches[0].Face;
+        const matchData = search.FaceMatches[0];
+        const match = matchData.Face;
+        const similarity = matchData.Similarity;
+
+        //const match = search.FaceMatches[0].Face;
         
-        if (match.Similarity >= 99) {
+        if (similarity >= 99) {
             return {
-              faceId: match.Face.FaceId,
-              externalImageId: match.Face.ExternalImageId,
-              confidence: match.Similarity,
+              faceId: match.FaceId,
+              externalImageId: match.ExternalImageId,
+              confidence: similarity,
               allowed: true
             };
           } else {
             return {
               faceId: null,
               externalImageId: null,
-              confidence: match.Similarity,
+              confidence: similarity,
               allowed: false
             };
           }

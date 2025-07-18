@@ -16,9 +16,9 @@ router.get('/check-aws', faceController.checkAWS);
 
 
 // nuevas rutas
-router.get('/images/by-visitor/:visitorId', faceController.getImagesByVisitorId);
+router.get('/images/by-user/:userId', faceController.getImagesByUserId);
 router.get('/images/by-realfilename', faceController.getImagesByRealFileName);
-router.get('/images/by-visitor-date', faceController.getImagesByVisitorIdAndDate);
+router.get('/images/by-user-date', faceController.getImagesByUserIdAndDate);
 
 
 module.exports = router;

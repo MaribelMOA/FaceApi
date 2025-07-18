@@ -2,13 +2,13 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
-//const visitorRoutes = require('./routes/visitorRoutes');
+//const userRoutes = require('./routes/useroutes');
 const visitRoutes = require('./routes/visitRoutes');
 const faceRoutes = require('./routes/faceRoutes');
 
-//app.use('/api/visitors', visitorRoutes);
+//app.use('/api/user', userRoutes);
 app.use('/api/visits', visitRoutes);
 app.use('/api/face', faceRoutes);
 

@@ -1,14 +1,14 @@
 const visitModel = require('../models/visitModel');
 
 async function saveVisit(req, res) {
-  const { visitorId, type, amount, imagePath } = req.body;
+  const { userId, type, amount, imagePath } = req.body;
 
-  if (!visitorId || !type || !amount || !imagePath) {
+  if (!userId || !type || !amount || !imagePath) {
     return res.status(400).json({ success: false, message: 'Missing data for visit' });
   }
 
   try {
-    await visitModel.saveVisit(visitorId, type, amount, imagePath);
+    await visitModel.saveVisit(userId, type, amount, imagePath);
     res.json({ success: true });
   } catch (err) {
     console.error('Error saving visit:', err);
@@ -17,10 +17,10 @@ async function saveVisit(req, res) {
 }
 
 async function getTotalDailyAmount(req, res) {
-  const { visitorId } = req.params;
+  const { userId } = req.params;
 
   try {
-    const total = await visitModel.getTotalDailyAmount(visitorId);
+    const total = await visitModel.getTotalDailyAmount(userId);
     res.json({ success: true, total });
   } catch (err) {
     console.error('Error getting daily amount:', err);
