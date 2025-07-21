@@ -100,7 +100,7 @@ module.exports = {
 
   // 5. Obtener URL de imagen desde S3
   getImage: async (req, res) => {
-        const { fileName } = req.query;
+        let { fileName } = req.query;
         if (!fileName) return res.status(400).json({ success: false, message: 'Must provide filename.' });
 
         // Añadir prefijo 'visitas/' si no está

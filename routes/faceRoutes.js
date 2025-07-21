@@ -16,7 +16,7 @@ router.delete('/delete-tempImage/:tempFileName', faceController.deleteTempImage)
 router.get('/check-aws', faceController.checkAWS);
 
 //NEW
-router.post('/register-and-transaction', registerImageAndSaveTransaction);
+router.post('/register-and-transaction', faceController.registerImageAndSaveTransaction);
 
 
 // Get imaages
