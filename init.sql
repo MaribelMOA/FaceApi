@@ -2,7 +2,8 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     face_id VARCHAR(255) NOT NULL,
-    external_image_id VARCHAR(255) NOT NULL
+    external_image_id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Crear tabla de transacciones

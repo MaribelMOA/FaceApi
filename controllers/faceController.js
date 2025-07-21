@@ -54,14 +54,6 @@ module.exports = {
         }
   },
 
-//   // 2. Registrar visita localmente (JSON o DB)
-//   registerVisit: async (req, res) => {
-//     const { faceId, externalImageId } = req.body;
-//     if (!faceId || !externalImageId) return res.status(400).json({ success: false, message: 'Missing data' });
-
-//     await visitModel.register({ faceId, externalImageId });
-//     return res.json({ success: true });
-//   },
 
   // 3. Registrar imagen definitiva en un bucket
   registerImage: async (req, res) => {
@@ -149,12 +141,6 @@ module.exports = {
     return res.json({ success: true, count: images.length, images });
   },
 
-  // 8. Checar cámara (mock)
-//   checkCamera: (req, res) => {
-//     const cameraOk = rekognitionService.isCameraAvailable();
-//     if (!cameraOk) return res.status(503).json({ success: false, message: 'Camera unavailable' });
-//     return res.json({ success: true, message: 'Camera available' });
-//   },
 
   // 9. Checar AWS
   checkAWS: async (req, res) => {
@@ -165,6 +151,41 @@ module.exports = {
         return res.status(503).json({ success: false, message: 'Unable to connect to AWS Rekognition.', error: err.message });
     }
   },
+
+  /////////////////
+   registerImageAndSaveTransaction: async (req, res) => {
+    try {
+      const { userId, tempFileName, realFileName, type, amount } = req.body;
+  
+      if (!userId || !tempFileName || !realFileName || !type || !amount) {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+      }
+  
+      // 1. Buscar buffer en caché
+      const imageBuffer = imageCache.get(tempFileName);
+      if (!imageBuffer) {
+        return res.status(404).json({ success: false, message: 'Temp image not found or expired' });
+      }
+  
+      // 2. Construir el nombre final y subir imagen
+      const finalName = `visitas/${userId}/${realFileName}.jpg`;
+      const imageUrl = await bucketService.uploadBuffer(imageBuffer, finalName);
+  
+      // 3. Eliminar imagen de caché
+      imageCache.delete(tempFileName);
+  
+      // 4. Guardar transacción con path
+      await transactionModel.saveTransaction(userId, type, amount, finalName); // guarda la ruta relativa
+  
+      // 5. Retornar éxito con la URL
+      return res.json({ success: true, imageUrl, transactionSaved: true });
+  
+    } catch (err) {
+      console.error('Error in registerImageAndSaveTransaction:', err);
+      return res.status(500).json({ success: false, message: 'Failed to register image and save transaction', error: err.message });
+    }
+  },
+  
 
   /////////////////////////////////////
   getImagesByUserId: async (req, res) => {
