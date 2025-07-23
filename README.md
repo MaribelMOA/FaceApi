@@ -292,7 +292,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
       "user_id": 1,
       "type": "compra",
       "amount": 100.5,
-      "image_path": "/images/img.jpg"
+      "image_path": "/visitas/1/transaction2A_20250718_130448.jpg"
     }
   ```
 
@@ -310,7 +310,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
  ```bash
     curl -X POST http://localhost:3000/api/transactions \
       -H "Content-Type: application/json" \
-      -d '{"user_id":1,"type":"compra","amount":100.5,"image_path":"/images/img.jpg"}'
+      -d '{"user_id":1,"type":"compra","amount":100.5,"image_path":"/visitas/1/transaction2A_20250718_130448.jpg"}'
   ```
 
 # 📌GET /api/transactions/users/:userId/accumulated
@@ -349,7 +349,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
           "user_id": 1,
           "type": "compra",
           "amount": 100.5,
-          "image_path": "/images/img.jpg",
+          "image_path": "/visitas/1/transaction2A_20250718_130448.jpg",
           "created_at": "2025-07-21T12:00:00.000Z"
         },
         ...
@@ -380,7 +380,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
         "user_id": 1,
         "type": "compra",
         "amount": 100.5,
-        "image_path": "/images/img.jpg",
+        "image_path": "/visitas/1/transaction2A_20250718_130448.jpg",
         "created_at": "2025-07-21T12:00:00.000Z"
       }
     }
@@ -416,7 +416,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
         "user_id": 1,
         "type": "venta",
         "amount": 150.0,
-        "image_path": "/images/img.jpg",
+        "image_path": "visitas/1/transaction2A_20250718_130448.jpg",
         "created_at": "2025-07-21T12:00:00.000Z"
       }
     }
@@ -449,7 +449,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
         "user_id": 1,
         "type": "venta",
         "amount": 150,
-        "image_path": "/images/img.jpg",
+        "image_path": "/visitas/1/transaction2A_20250718_130448.jpg",
         "created_at": "2025-07-21T12:00:00.000Z"
       }
     }
@@ -521,7 +521,7 @@ Campo requerido: image (archivo de imagen)
     {
       "userId": 1,
       "tempFileName": "face_xyz_172345678.jpg",
-      "realFileName": "entrada_001"
+      "realFileName": "transaction4A_20250718_140243"
     }
   ```
 
@@ -529,7 +529,7 @@ Campo requerido: image (archivo de imagen)
  ```json
     {
      "success": true,
-     "imageUrl": "https://storage.googleapis.com/.../visitas/1/entrada_001.jpg"
+     "imageUrl": "https://storage.googleapis.com/.../visitas/1/transaction4A_20250718_140243.jpg"
    }
   ```
 ❌ Errores
@@ -548,10 +548,13 @@ Campo requerido: image (archivo de imagen)
       "message": "Temp image deleted successfully from memory"
     }
 
-
   ```
 ❌ Errores
  - 404: Imagen temporal no encontrada
+
+  ```bash
+    curl -X DELETE http://localhost:3000/api/face/delete-tempImage/face_7xaaicsd_1752871071236.jpg
+  ```
 
 # 📌 GET /api/face/check-aws
 
@@ -586,10 +589,9 @@ Campo requerido: image (archivo de imagen)
  ```json
     {
       "success": true,
-      "imageUrl": "https://storage.googleapis.com/.../visitas/1/entrada_final.jpg",
+      "imageUrl": "https://storage.googleapis.com/.../visitas/1/transaction2A_20250718_130448.jpg",
       "transactionSaved": true
     }
-
 
   ```
 ❌ Errores
@@ -597,7 +599,7 @@ Campo requerido: image (archivo de imagen)
  - 404: Imagen temporal no encontrada
  - 500: Fallo al registrar imagen o guardar transacción
 
-# 📌 GET /api/face/get-image?fileName=visitas/1/entrada.jpg
+# 📌 GET /api/face/get-image?fileName=visitas/:userId/transaction4A_20250718_140243.jpg
 
 *Descripción*: Obtiene una URL firmada temporal para una imagen almacenada.
 
@@ -622,14 +624,14 @@ Campo requerido: image (archivo de imagen)
   {
     "success": true,
     "count": 5,
-    "images": ["visitas/1/img1.jpg", "visitas/1/img2.jpg", ...]
+    "images": ["https://storage.googleapis.com/facerecognition-visitas-maribel-gcs/visitas/1/transactionTEST_2252107_105326.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&",  "https://storage.googleapis.com/facerecognition-visitas-maribel-gcs/visitas/1/transaction3A_20250718_135823.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&", ...]
   }
   ```
 ❌ Error al obtener las transacciones
  - 400: Falta userId
  - 500: Error interno
 
-# 📌 GET /api/face/images/by-realfilename?realFileName=entrada_001
+# 📌 GET /api/face/images/by-realfilename?realFileName=visitas/1/transactionTEST_2252107_105326.jpg
 
 *Descripción*: Busca imágenes por nombre real.
 
@@ -637,15 +639,14 @@ Campo requerido: image (archivo de imagen)
  ```json
   {
     "success": true,
-    "count": 1,
-    "images": ["visitas/1/entrada_001.jpg"]
+    "url": "https://storage.googleapis.com/facerecognition-visitas-maribel-gcs/visitas/1/transactionTEST_2252107_105326.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=s"]
   }
  ```
 ❌ Errores
  - 400: Falta realFileName
  - 500: Error interno
 
-# 📌 GET /api/face/images/by-user-date?userId=1&date=2024-07-21
+# 📌 GET /api/face/images/by-user-date?userId=1&date=2025-07-21
 
 *Descripción*: Busca imágenes por ID de usuario y fecha (YYYY-MM-DD).
 
@@ -655,8 +656,8 @@ Campo requerido: image (archivo de imagen)
     "success": true,
     "count": 2,
     "images": [
-      "visitas/1/entrada_20240721.jpg",
-      "visitas/1/salida_20240721.jpg"
+      "https://storage.googleapis.com/facerecognition-visitas-maribel-gcs/visitas/1/transaction1A_20250718_130448.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&",
+       "https://storage.googleapis.com/facerecognition-visitas-maribel-gcs/visitas/1/transaction2A_20250718_130448.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&"
     ]
   }
  ```
