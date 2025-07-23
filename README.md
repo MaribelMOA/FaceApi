@@ -115,7 +115,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
 ---
 # 🧩 Rutas de la API
 
-####  🔹 /api/user – Rutas de Usuario
+# 🔹 /api/user – Rutas de Usuario
 
 
 | Método | Ruta              | Descripción                                      | 
@@ -271,7 +271,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
     curl -X DELETE http://localhost:3000/api/user/1
   ```
 ---
-#### 🔹 /api/transactions – Rutas de Transacciones
+# 🔹 /api/transactions – Rutas de Transacciones
 
 | Método | Ruta                                   | Descripción                                             | 
 |--------|----------------------------------------|---------------------------------------------------------|
@@ -385,7 +385,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
       }
     }
   ```
-❌ Error al obtener las transacciones
+❌ Errores
  - 404: Transacción no encontrada
  - 500: Error al obtener la transacción
 
@@ -421,7 +421,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
       }
     }
   ```
-❌ Error al obtener las transacciones
+❌ Errores
  - 400: No se enviaron campos válidos para actualizar
  - 404: Transacción no encontrada
  - 500: Error interno
@@ -455,7 +455,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
     }
 
   ```
-❌ Error al obtener las transacciones
+❌ Errores
  - 404: Transacción no encontrada
  - 500: Error interno
 
@@ -464,7 +464,7 @@ Puedes probar las rutas con herramientas como Postman o Swagger si lo integras.
     curl -X DELETE http://localhost:3000/api/transactions/1
  ```
 
-#### 🔹 /api/face – Rutas de Reconocimiento Facial
+# 🔹 /api/face – Rutas de Reconocimiento Facial
 
 
 | Método | Ruta                                   | Descripción                                                       |
@@ -501,7 +501,7 @@ Campo requerido: image (archivo de imagen)
     }
 
   ```
-❌ Error al obtener las transacciones
+❌ Errores
  - 400: No se envió archivo de imagen
  - 404: Rostro no reconocido
  - 500: Error interno
@@ -523,32 +523,144 @@ Campo requerido: image (archivo de imagen)
       "tempFileName": "face_xyz_172345678.jpg",
       "realFileName": "entrada_001"
     }
+  ```
 
+✅ Respuesta exitosa  
+ ```json
+    {
+     "success": true,
+     "imageUrl": "https://storage.googleapis.com/.../visitas/1/entrada_001.jpg"
+   }
+  ```
+❌ Errores
+ - 400: Campos faltantes
+ - 404: Imagen no encontrada en caché
+ - 500: Error al subir imagen
+   
+# 📌 DELETE /api/face/delete-tempImage/:tempFileName
+
+*Descripción*: Elimina una imagen temporal en memoria.
+
+✅ Respuesta exitosa  
+ ```json
+    {
+      "success": true,
+      "message": "Temp image deleted successfully from memory"
+    }
+
+
+  ```
+❌ Errores
+ - 404: Imagen temporal no encontrada
+
+# 📌 GET /api/face/check-aws
+
+*Descripción*: Verifica conectividad con AWS Rekognition.
+
+✅ Respuesta exitosa  
+ ```json
+    {
+      "success": true,
+      "message": "AWS Rekognition connection successful."
+    }
+  ```
+❌ Errores
+ - 503: Error de conexión con AWS
+
+# 📌 POST /api/face/register-and-transaction
+
+*Descripción*: Registra imagen + guarda transacción para el usuario.
+
+🔸 Request body
+ ```json
+    {
+      "user_id": 1,
+      "temp_file_name": "face_xyz.jpg",
+      "real_file_name": "entrada_final",
+      "type": "compra",
+      "amount": 100.5
+    }
   ```
 
 ✅ Respuesta exitosa  
  ```json
     {
       "success": true,
-      "confidence": 99.85,
-      "user": {
-        "id": 1,
-        "face_id": "abc123",
-        "external_image_id": "img789",
-        "created_at": "2024-01-01T12:34:56.000Z"
-      },
-      "image_file_path": "face_xyz_172345678.jpg"
+      "imageUrl": "https://storage.googleapis.com/.../visitas/1/entrada_final.jpg",
+      "transactionSaved": true
     }
 
+
+  ```
+❌ Errores
+ - 400: Faltan campos requeridos
+ - 404: Imagen temporal no encontrada
+ - 500: Fallo al registrar imagen o guardar transacción
+
+# 📌 GET /api/face/get-image?fileName=visitas/1/entrada.jpg
+
+*Descripción*: Obtiene una URL firmada temporal para una imagen almacenada.
+
+✅ Respuesta exitosa  
+ ```json
+   {
+     "success": true,
+     "url": "https://storage.googleapis.com/..."
+   }
+
+  ```
+❌ Errores
+ - 400: Falta el parámetro fileName
+ - 404: Imagen no encontrada
+
+# 📌  GET /api/face/images/by-user/:userId
+
+*Descripción*: Lista imágenes en el bucket asociadas a un usuario.
+
+✅ Respuesta exitosa  
+ ```json
+  {
+    "success": true,
+    "count": 5,
+    "images": ["visitas/1/img1.jpg", "visitas/1/img2.jpg", ...]
+  }
   ```
 ❌ Error al obtener las transacciones
- - 400: No se envió archivo de imagen
- - 404: Rostro no reconocido
+ - 400: Falta userId
  - 500: Error interno
 
-📎 Ejemplo curl
- ```bash
-    curl -X POST http://localhost:3000/api/face/identify \
-      -H "Content-Type: multipart/form-data" \
-      -F "image=@/ruta/a/imagen.jpg"
+# 📌 GET /api/face/images/by-realfilename?realFileName=entrada_001
+
+*Descripción*: Busca imágenes por nombre real.
+
+✅ Respuesta exitosa  
+ ```json
+  {
+    "success": true,
+    "count": 1,
+    "images": ["visitas/1/entrada_001.jpg"]
+  }
  ```
+❌ Errores
+ - 400: Falta realFileName
+ - 500: Error interno
+
+# 📌 GET /api/face/images/by-user-date?userId=1&date=2024-07-21
+
+*Descripción*: Busca imágenes por ID de usuario y fecha (YYYY-MM-DD).
+
+✅ Respuesta exitosa  
+ ```json
+  {
+    "success": true,
+    "count": 2,
+    "images": [
+      "visitas/1/entrada_20240721.jpg",
+      "visitas/1/salida_20240721.jpg"
+    ]
+  }
+ ```
+❌ Errores
+ - 400: Faltan parámetros
+ - 500: Error interno
+
